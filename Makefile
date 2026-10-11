@@ -47,6 +47,8 @@ REGISTRY := include/file_registry.h include/file_registry.c
 ICONS := assets/icon0.png assets/icon.ico
 INSTALLER_LOGO := frontend/installer-page/logo.svg
 HOST_PAYLOAD ?= $(ELF)
+# Tiles: the ELF the chain page hands to elfldr (default: the unified autoloader)
+AUTOLOAD_ELF ?= build/deps/autoload.elf
 PAYLOAD_TAG ?= $(shell git -C third_party/ps5-unified-autoloader describe --tags --always 2>/dev/null || echo v0.1.5-915a65e)
 AUTOLOAD_PAYLOAD_VIRTUAL ?= ps5-unified-autoloader-$(PAYLOAD_TAG).elf
 HOST_PAYLOAD_VIRTUAL ?= $(if $(filter-out installer.elf,$(notdir $(HOST_PAYLOAD))),$(notdir $(HOST_PAYLOAD)),webkit-autoloader-installer_v$(BUILD_VERSION).elf)
@@ -96,7 +98,7 @@ page: payload-deps
 	    echo "$(BUILDER) payloads/$$chain.js -> build/autoloader/$$chain.html"; \
 	    $(BUILDER) $(CURDIR)/payloads/elfldr-check.js payloads/$$chain.js $(CURDIR)/payloads/autoload.js::$(AUTOLOAD_PAYLOAD_VIRTUAL) \
 	        --title "$(BUILD_TITLE)" $(PAGE_FLAGS) \
-	        --embed $(AUTOLOAD_PAYLOAD_VIRTUAL)=build/deps/autoload.elf \
+	        --embed $(AUTOLOAD_PAYLOAD_VIRTUAL)=$(AUTOLOAD_ELF) \
 	        -o $(CURDIR)/build/autoloader/$$chain.html || exit 1; \
 	done
 

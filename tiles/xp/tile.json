@@ -1,0 +1,8 @@
+{
+  "id": "WKAL00002",
+  "name": "Windows XP",
+  "port": 18182,
+  "loader": "tiles/xp/loader.elf",
+  "icon": "tiles/xp/icon.svg",
+  "note": "Linux loader with ps5vm=xp on the kernel command line: PS5 Linux boots straight into the XP VM"
+}

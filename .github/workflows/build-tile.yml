@@ -1,0 +1,32 @@
+name: Build tile installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      tile:
+        description: "Tile to build (folder under tiles/)"
+        type: string
+        required: true
+        default: xp
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: Build SDK image
+        run: docker build -t ps5-webkit-autoloader-sdk -f third_party/ps5-webkit-remote-loader/Dockerfile.sdk third_party/ps5-webkit-remote-loader
+      - name: Configure tile
+        run: python3 tools/make_tile.py "${{ inputs.tile }}"
+      - name: Build installer
+        run: |
+          LOADER=$(python3 -c "import json;print(json.load(open('tiles/${{ inputs.tile }}/tile.json'))['loader'])")
+          docker run --rm -u "$(id -u):$(id -g)" -e BUILD_TYPE=dev -e "CUSTOM_VERSION=${{ inputs.tile }}"             -v "$(pwd)":/src -w /src ps5-webkit-autoloader-sdk make clean all AUTOLOAD_ELF="$LOADER"
+          mv installer.elf "tile-${{ inputs.tile }}-installer.elf"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tile-${{ inputs.tile }}
+          path: tile-${{ inputs.tile }}-installer.elf
